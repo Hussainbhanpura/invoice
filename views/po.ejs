@@ -54,7 +54,7 @@
                       <button
                         class="btn btn-primary btn-sm"
                         type="button"
-                        onclick="openModal('Add Logistic', 'http://localhost:3001/api/logistics')"
+                        onclick="openModal('Add Logistic', 'https://invoice-4.onrender.com/api/logistics')"
                       >
                         +
                       </button>
@@ -81,7 +81,7 @@
                       <button
                         class="btn btn-primary btn-sm"
                         type="button"
-                        onclick="openModal('Add Distributor', 'http://localhost:3001/api/distributors')"
+                        onclick="openModal('Add Distributor', 'https://invoice-4.onrender.com/api/distributors')"
                       >
                         +
                       </button>
@@ -320,7 +320,7 @@
 
           // Fetch logistic data
           const logisticResponse = await fetch(
-            `http://localhost:3001/api/logistic/${logisticValue}`
+            `https://invoice-4.onrender.com/api/logistic/${logisticValue}`
           );
           if (!logisticResponse.ok) {
             throw new Error(
@@ -331,7 +331,7 @@
 
           // Fetch distributor data
           const distributorResponse = await fetch(
-            `http://localhost:3001/api/distributor/${distributorValue}`
+            `https://invoice-4.onrender.com/api/distributor/${distributorValue}`
           );
           if (!distributorResponse.ok) {
             throw new Error(

@@ -39,8 +39,8 @@ mongoose.connect(uri, {
 
     app.get("/po", async (req, res) => {
       try {
-        const distributorsResponse = await axios.get("http://localhost:3001/api/distributors");
-        const logisticsResponse = await axios.get("http://localhost:3001/api/logistics");
+        const distributorsResponse = await axios.get("https://invoice-4.onrender.com/api/distributors");
+        const logisticsResponse = await axios.get("https://invoice-4.onrender.com/api/logistics");
 
         const distributors = distributorsResponse.data;
         const logistics = logisticsResponse.data;
