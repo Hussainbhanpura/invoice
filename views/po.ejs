@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Form</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom styles for full-page iframe */
+      #pdfViewer {
+        width: 100%;
+        height: 100vh; /* Full viewport height */
+        border: none;
+        display: none; /* Hide by default */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h1 class="mb-4">Invoice Item Entry</h1>
+      <form id="invoiceForm">
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Logistic</th>
+                <th>Distributor</th>
+                <th>Invoice No</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="input-group">
+                    <select
+                      style="min-width: 80px !important"
+                      aria-label="Logistic"
+                      class="form-control form-control-sm"
+                      id="logistic"
+                      required
+                    >
+                      <% for (let i = 0; i < logistic.length; i++) { %>
+                      <option value="<%= logistic[i]._id %>">
+                        <%= logistic[i].name %>
+                      </option>
+                      <% } %>
+                    </select>
+                    <div class="input-group-append">
+                      <button
+                        class="btn btn-primary btn-sm"
+                        type="button"
+                        onclick="openModal('Add Logistic', 'http://localhost:3001/api/logistics')"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="input-group">
+                    <select
+                      style="min-width: 80px !important"
+                      aria-label="Distributor"
+                      class="form-control form-control-sm dropdown-toggle"
+                      id="distributor"
+                      required
+                    >
+                      <% for (let i = 0; i < distributor.length; i++) { %>
+                      <option value="<%= distributor[i]._id %>">
+                        <%= distributor[i].name %>
+                      </option>
+                      <% } %>
+                    </select>
+                    <div class="input-group-append">
+                      <button
+                        class="btn btn-primary btn-sm"
+                        type="button"
+                        onclick="openModal('Add Distributor', 'http://localhost:3001/api/distributors')"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <input
+                    type="text"
+                    style="min-width: 80px !important"
+                    aria-label="invoiceNo"
+                    class="form-control form-control-sm"
+                    id="invoiceNo"
+                    required
+                    value="<%= invoiceNo || '' %>"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="date"
+                    style="min-width: 80px !important"
+                    aria-label="date"
+                    class="form-control form-control-sm"
+                    id="date"
+                    required
+                    value="<%= date || new Date().toISOString().split('T')[0] %>"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered" id="itemsTable">
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Description</th>
+                <th>Packaging</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows will be added here dynamically -->
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="addRow()">
+          Add Item
+        </button>
+        <div class="form-group mt-3">
+          <label for="totalAmount">Total Amount:</label>
+          <input
+            type="text"
+            id="totalAmount"
+            name="totalAmount"
+            class="form-control"
+            readonly
+          />
+        </div>
+        <button type="submit" class="btn btn-success">Generate PDF</button>
+      </form>
+
+      <!-- Full-page iframe for displaying the PDF (optional) -->
+      <iframe id="pdfViewer"></iframe>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Add Distributor</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Form for adding distributor details -->
+            <form>
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" required />
+              </div>
+              <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="address" required />
+              </div>
+              <div class="mb-3">
+                <label for="gstin" class="form-label">GSTIN</label>
+                <input type="text" class="form-control" id="gstin" required />
+              </div>
+              <div class="mb-3">
+                <label for="stateName" class="form-label">State Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="stateName"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="code" class="form-label">Code</label>
+                <input type="text" class="form-control" id="code" required />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onclick="$('#exampleModal').modal('hide')"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js"
+      integrity="sha512-w3u9q/DeneCSwUDjhiMNibTRh/1i/gScBVp2imNVAMCt6cUHIw6xzhzcPFIaL3Q1EbI2l+nu17q2aLJJLo4ZYg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("date").value = today;
+      });
+      function addRow() {
+        const table = document
+          .getElementById("itemsTable")
+          .getElementsByTagName("tbody")[0];
+        const newRow = table.insertRow();
+
+        const itemNameCell = newRow.insertCell();
+        itemNameCell.innerHTML = `<select name="itemName" style="min-width:200px !important" class="form-control form-control-sm" required>
+            <option value="IPhone 13 128GB">IPhone 13 128GB</option>
+            <option value="IPhone 13 256GB">IPhone 13 256GB</option>
+            <option value="IPhone 14 128GB">IPhone 14 128GB</option>
+            <option value="IPhone 14 256GB">IPhone 14 256GB</option>
+            <option value="IPhone 15 128GB">IPhone 15 128GB</option>
+            <option value="IPhone 15 256GB">IPhone 15 256GB</option>
+        </select>`;
+
+        const descriptionCell = newRow.insertCell();
+        descriptionCell.innerHTML = `<input type="text" name="description" class="form-control" style="min-width: 100px !important" required>`;
+
+        const packagingCell = newRow.insertCell();
+        packagingCell.innerHTML = `<select name="packaging" class="form-control form-control-sm" required>
+            <option value="Loose">Loose</option>
+            <option value="Master Cartoon">Master Cartoon</option>
+        </select>`;
+
+        const quantityCell = newRow.insertCell();
+        quantityCell.innerHTML =
+          '<input type="number" name="quantity" class="form-control" min="1" required oninput="calculateAmount(this)">';
+
+        const rateCell = newRow.insertCell();
+        rateCell.innerHTML =
+          '<input type="number" name="rate" style="min-width:100px !important" class="form-control" min="0" step="0.01" required oninput="calculateAmount(this)">';
+
+        const amountCell = newRow.insertCell();
+        amountCell.innerHTML =
+          '<input type="text" name="amount" class="form-control" readonly>';
+
+        const actionCell = newRow.insertCell();
+        actionCell.innerHTML =
+          '<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button>';
+      }
+
+      function calculateAmount(input) {
+        const row = input.closest("tr");
+        const quantity = row.querySelector('input[name="quantity"]').value;
+        const rate = row.querySelector('input[name="rate"]').value;
+        const amount = row.querySelector('input[name="amount"]');
+
+        amount.value = (quantity * rate).toFixed(2);
+        calculateTotal();
+      }
+
+      function calculateTotal() {
+        let total = 0;
+        const amounts = document.querySelectorAll('input[name="amount"]');
+        amounts.forEach((amount) => {
+          total += parseFloat(amount.value) || 0;
+        });
+        document.getElementById("totalAmount").value = total.toFixed(2);
+      }
+
+      function removeRow(button) {
+        const row = button.closest("tr");
+        row.remove();
+        calculateTotal();
+      }
+
+      document
+        .getElementById("invoiceForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const formData = new FormData(this);
+          const data = {};
+
+          // Collect form data
+          formData.forEach((value, key) => {
+            if (!data[key]) data[key] = [];
+            data[key].push(value);
+          });
+          const logisticValue = document.getElementById("logistic").value;
+          const distributorValue = document.getElementById("distributor").value;
+
+          // Fetch logistic data
+          const logisticResponse = await fetch(
+            `http://localhost:3001/api/logistic/${logisticValue}`
+          );
+          if (!logisticResponse.ok) {
+            throw new Error(
+              `Error fetching logistic data: ${logisticResponse.statusText}`
+            );
+          }
+          const logisticData = await logisticResponse.json(); // Parse the response to JSON
+
+          // Fetch distributor data
+          const distributorResponse = await fetch(
+            `http://localhost:3001/api/distributor/${distributorValue}`
+          );
+          if (!distributorResponse.ok) {
+            throw new Error(
+              `Error fetching distributor data: ${distributorResponse.statusText}`
+            );
+          }
+          const distributorData = await distributorResponse.json(); // Parse the response to JSON
+
+          data.distributor = distributorData;
+          data.logistic = logisticData;
+          const invoiceNo = document.getElementById("invoiceNo").value;
+          if (invoiceNo) {
+            data.invoiceNo = invoiceNo;
+          } else {
+            alert("Please enter the invoice number.");
+            return;
+          }
+
+          const date = document.getElementById("date").value;
+          if (date) {
+            data.date = date;
+          } else {
+            alert("Please enter the date.");
+            return;
+          }
+
+          try {
+            const response = await fetch("/poconversion", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+              const pdfBlob = await response.blob();
+              const pdfUrl = URL.createObjectURL(pdfBlob);
+
+              // Create a link element and trigger a download
+              const link = document.createElement("a");
+              link.href = pdfUrl;
+              link.download = "po.pdf";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            } else {
+              alert(
+                "Failed to generate PDF. Please check the server console for errors."
+              );
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while generating the PDF.");
+          }
+        });
+
+      function openModal(title, endpoint) {
+        $("#exampleModalLabel").text(title);
+        $("#exampleModal").modal("show");
+
+        const saveChangesBtn = document.querySelector(
+          "#exampleModal .modal-footer button.btn-primary"
+        );
+
+        saveChangesBtn.addEventListener("click", function () {
+          const name = document.getElementById("name").value;
+          const address = document.getElementById("address").value;
+          const gstin = document.getElementById("gstin").value;
+          const stateName = document.getElementById("stateName").value;
+          const code = document.getElementById("code").value;
+
+          const data = {
+            name: name,
+            address: address,
+            gstin: gstin,
+            stateName: stateName,
+            code: code,
+          };
+
+          axios
+            .post(endpoint, data)
+            .then(function (response) {
+              window.location.reload();
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
